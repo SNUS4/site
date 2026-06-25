@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Тест: Методика преподавания математики</title>
+  <meta name="description" content="Онлайн-тест по методике преподавания математики. Выберите режим и пройдите 25 случайных вопросов." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── ANTI-PRINT ── */
+    @media print {
+      body * { display: none !important; }
+      body::after {
+        display: block !important;
+        content: "Печать этого документа запрещена системой защиты.";
+        font-size: 24px; text-align: center; padding: 100px;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0e1a;
+      --bg2: #0f1526;
+      --card: rgba(255,255,255,0.05);
+      --card-border: rgba(255,255,255,0.1);
+      --accent1: #6c63ff;
+      --accent2: #00d4aa;
+      --accent3: #ff6b6b;
+      --text: #e8eaf0;
+      --text-muted: #8892a4;
+      --correct: #00d4aa;
+      --wrong: #ff6b6b;
+      --glow1: rgba(108,99,255,0.4);
+      --glow2: rgba(0,212,170,0.3);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      /* Disable text selection globally during test (toggled by JS) */
+    }
+
+    body.no-select {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* ── ANIMATED BACKGROUND ── */
+    .bg-orbs {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18;
+      animation: floatOrb 20s ease-in-out infinite;
+    }
+    .orb1 { width: 500px; height: 500px; background: var(--accent1); top: -100px; left: -100px; animation-delay: 0s; }
+    .orb2 { width: 400px; height: 400px; background: var(--accent2); bottom: -100px; right: -50px; animation-delay: -7s; }
+    .orb3 { width: 300px; height: 300px; background: #ff6b6b; top: 40%; left: 60%; animation-delay: -13s; }\
+    @keyframes floatOrb {
+      0%, 100% { transform: translate(0,0) scale(1); }
+      33% { transform: translate(30px,-30px) scale(1.05); }
+      66% { transform: translate(-20px,20px) scale(0.95); }
+    }
+
+    /* ── WATERMARK ── */
+    #watermark {
+      display: none;
+      position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      overflow: hidden;
+    }
+    #watermark .wm-text {
+      position: absolute;
+      width: 100%; top: 50%;
+      transform: translateY(-50%) rotate(-25deg);
+      display: flex; flex-direction: column; gap: 80px; opacity: 0.04;
+    }
+    #watermark .wm-row {
+      display: flex; gap: 120px; white-space: nowrap;
+    }
+    #watermark .wm-item {
+      font-size: 20px; font-weight: 700; color: white;
+      letter-spacing: 1px;
+    }
+
+    /* ── PAGES ── */
+    .page { position: relative; z-index: 1; }
+
+    /* ══════════════════════════════════════
+       ANTI-CHEAT MODALS
+    ══════════════════════════════════════ */
+
+    /* Overlay backdrop */
+    .ac-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(12px);
+      align-items: center; justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+    .ac-overlay.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .ac-modal {
+      background: #0f1526;
+      border: 1px solid rgba(255,107,107,0.3);
+      border-radius: 24px; padding: 48px 40px;
+      max-width: 480px; width: 90%;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(255,107,107,0.2), 0 20px 60px rgba(0,0,0,0.8);
+      animation: scaleIn 0.3s ease;
+      position: relative; overflow: hidden;
+    }
+    .ac-modal::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at top, rgba(255,107,107,0.08), transparent 60%);
+      pointer-events: none;
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .ac-modal.shake { animation: shakeModal 0.5s ease; }
+    @keyframes shakeModal {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(10px); }
+      60% { transform: translateX(-8px); }
+      80% { transform: translateX(8px); }
+    }
+
+    .ac-icon { font-size: 56px; margin-bottom: 16px; display: block; }
+    .ac-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 10px; }
+    .ac-desc { font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px; }
+    .ac-strikes {
+      display: flex; justify-content: center; gap: 10px; margin-bottom: 28px;
+    }
+    .strike-dot {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid rgba(255,107,107,0.4);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; transition: all 0.3s ease;
+    }
+    .strike-dot.filled {
+      background: var(--wrong); border-color: var(--wrong);
+      box-shadow: 0 0 12px rgba(255,107,107,0.6);
+    }
+    .ac-btn {
+      padding: 14px 40px; border-radius: 50px; border: none; cursor: pointer;
+      font-size: 15px; font-weight: 700; font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--accent1), #8b85ff);
+      color: white; box-shadow: 0 8px 24px var(--glow1);
+      transition: all 0.3s ease;
+    }
+    .ac-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px var(--glow1); }
+    .ac-btn.danger {
+      background: linear-gradient(135deg, #ff4444, #ff6b6b);
+      box-shadow: 0 8px 24px rgba(255,68,68,0.4);
+    }
+
+    /* Locked state modal */
+    #locked-overlay { background: rgba(0,0,0,0.95); }
+    .locked-modal {
+      background: #0f1526;
+      border: 1px solid rgba(255,107,107,0.5);
+      border-radius: 24px; padding: 56px 40px;
+      max-width: 480px; width: 90%;
+      text-align: center;
+      box-shadow: 0 0 80px rgba(255,68,68,0.3);
+    }
+
+
+
+    /* Devtools warning */
+    #devtools-overlay { }
+
+    /* Tab switch overlay (shown when user alt-tabs) */
+    #tabswitch-overlay {
+      background: rgba(0,0,0,0.97);
+      flex-direction: column; gap: 0;
+    }
+
+    /* ══════════════════════════════════════
+       PROCTORING BAR (shown during test)
+    ══════════════════════════════════════ */
+    #proctor-bar {
+      display: none;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(10,14,26,0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(20px);
+      padding: 10px 24px;
+      flex-direction: row; align-items: center; justify-content: space-between;
+      gap: 16px;
+    }
+    .proctor-left { display: flex; align-items: center; gap: 12px; }
+    .proctor-indicator {
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(0,212,170,0.12); border: 1px solid rgba(0,212,170,0.3);
+      border-radius: 50px; padding: 6px 14px;
+    }
+    .proctor-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent2);
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+    .proctor-label { font-size: 12px; font-weight: 600; color: var(--accent2); letter-spacing: 0.5px; }
+
+    .proctor-session { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+
+    .proctor-right { display: flex; align-items: center; gap: 16px; }
+
+    /* Timer */
+    #timer-display {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(108,99,255,0.12); border: 1px solid rgba(108,99,255,0.3);
+      border-radius: 50px; padding: 6px 16px;
+    }
+    .timer-icon { font-size: 14px; }
+    #timer-val {
+      font-size: 15px; font-weight: 700; color: #a0a8ff;
+      font-variant-numeric: tabular-nums; min-width: 48px; text-align: center;
+    }
+    #timer-display.warning { border-color: rgba(255,200,0,0.5); background: rgba(255,200,0,0.1); }
+    #timer-display.warning #timer-val { color: #ffd700; animation: timerPulse 1s infinite; }
+    #timer-display.danger { border-color: rgba(255,107,107,0.5); background: rgba(255,107,107,0.1); }
+    #timer-display.danger #timer-val { color: #ff6b6b; animation: timerPulse 0.5s infinite; }
+    @keyframes timerPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    /* Strikes display in bar */
+    .strikes-bar { display: flex; gap: 6px; align-items: center; }
+    .strikes-bar-label { font-size: 11px; color: var(--text-muted); margin-right: 4px; }
+    .sbar-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 1.5px solid rgba(255,107,107,0.4);
+      transition: all 0.3s ease;
+    }
+    .sbar-dot.filled { background: var(--wrong); border-color: var(--wrong); box-shadow: 0 0 6px rgba(255,107,107,0.7); }
+
+    /* ── LANDING ── */
+    #landing {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 20px;
+    }
+    .landing-header { text-align: center; margin-bottom: 60px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.4);
+      border-radius: 50px; padding: 8px 20px; font-size: 13px; color: #a0a8ff;
+      margin-bottom: 24px; letter-spacing: 0.5px;
+    }
+    .badge::before { content: '✦'; color: var(--accent1); }
+    .landing-title {
+      font-size: clamp(32px, 6vw, 64px); font-weight: 800; line-height: 1.1;
+      background: linear-gradient(135deg, #fff 0%, #a0a8ff 50%, var(--accent2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 16px;
+    }
+    .landing-sub { font-size: 18px; color: var(--text-muted); max-width: 500px; margin: 0 auto; line-height: 1.6; }
+
+    .landing-security-note {
+      margin-top: 32px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-size: 13px; color: var(--text-muted);
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 50px; padding: 10px 24px; max-width: 500px; margin: 32px auto 0;
+    }
+    .sec-icon { font-size: 15px; }
+
+    .cards-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px; max-width: 800px; width: 100%;
+    }
+    .mode-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 24px; padding: 40px 32px; cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      backdrop-filter: blur(20px); position: relative; overflow: hidden; text-align: center;
+    }
+    .mode-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(255,255,255,0.03)); pointer-events: none;
+    }
+    .mode-card:hover { transform: translateY(-8px); border-color: var(--accent1); box-shadow: 0 20px 60px var(--glow1); }
+    .mode-card.ai-card:hover { border-color: var(--accent2); box-shadow: 0 20px 60px var(--glow2); }
+    .card-icon {
+      width: 72px; height: 72px; border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; margin: 0 auto 24px;
+    }
+    .teacher-card .card-icon { background: linear-gradient(135deg, rgba(108,99,255,0.3), rgba(108,99,255,0.1)); }
+    .ai-card .card-icon { background: linear-gradient(135deg, rgba(0,212,170,0.3), rgba(0,212,170,0.1)); }
+    .card-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+    .teacher-card .card-label { color: #a0a8ff; }
+    .ai-card .card-label { color: var(--accent2); }
+    .card-title { font-size: 22px; font-weight: 700; margin-bottom: 12px; color: #fff; }
+    .card-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 28px; }
+    .card-meta { display: flex; justify-content: center; gap: 16px; font-size: 12px; color: var(--text-muted); margin-bottom: 28px; }
+    .meta-item { display: flex; align-items: center; gap: 5px; }
+    .btn-start {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 32px; border-radius: 50px; border: none; cursor: pointer;
+      font-size: 15px; font-weight: 600; font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease; width: 100%;
+    }
+    .teacher-card .btn-start { background: linear-gradient(135deg, var(--accent1), #8b85ff); color: white; box-shadow: 0 8px 24px var(--glow1); }
+    .teacher-card .btn-start:hover { transform: scale(1.03); box-shadow: 0 12px 32px var(--glow1); }
+    .ai-card .btn-start { background: linear-gradient(135deg, var(--accent2), #00b893); color: #0a1a14; box-shadow: 0 8px 24px var(--glow2); }
+    .ai-card .btn-start:hover { transform: scale(1.03); box-shadow: 0 12px 32px var(--glow2); }
+
+    /* ── TEST PAGE ── */
+    #test-page { display: none; min-height: 100vh; padding: 80px 20px 80px; }
+    .test-header {
+      max-width: 900px; margin: 0 auto 40px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .test-header-left { display: flex; flex-direction: column; gap: 4px; }
+    .test-mode-badge {
+      font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 50px; display: inline-block; width: fit-content;
+    }
+    .test-mode-badge.teacher { background: rgba(108,99,255,0.2); color: #a0a8ff; }
+    .test-mode-badge.ai { background: rgba(0,212,170,0.2); color: var(--accent2); }
+    .test-title-h { font-size: 28px; font-weight: 700; color: #fff; }
+
+    .back-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.06); border: 1px solid var(--card-border);
+      border-radius: 50px; padding: 10px 20px; color: var(--text-muted);
+      cursor: pointer; font-size: 14px; font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+    .progress-bar-wrap {
+      max-width: 900px; margin: 0 auto 32px;
+      background: rgba(255,255,255,0.06); border-radius: 50px; height: 6px; overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%; border-radius: 50px; width: 100%;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    }
+
+    .questions-list { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+    .question-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 20px; padding: 28px 32px; backdrop-filter: blur(20px);
+      transition: border-color 0.3s ease;
+      animation: slideIn 0.4s ease both;
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .question-card.answered-correct { border-color: rgba(0,212,170,0.5); }
+    .question-card.answered-wrong { border-color: rgba(255,107,107,0.5); }
+
+    .q-number { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+    .q-text { font-size: 17px; font-weight: 600; color: #fff; line-height: 1.5; margin-bottom: 20px; }
+    .options-list { display: flex; flex-direction: column; gap: 10px; }
+    .option-label {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 14px 18px; cursor: pointer;
+      transition: all 0.2s ease; position: relative; overflow: hidden;
+    }
+    .option-label:hover { background: rgba(108,99,255,0.1); border-color: rgba(108,99,255,0.3); }
+    .option-label input[type="radio"] { display: none; }
+    .option-letter {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: var(--text-muted); transition: all 0.2s ease;
+    }
+    .option-text { font-size: 15px; color: var(--text); line-height: 1.4; }
+    .option-label input:checked ~ .option-letter { background: var(--accent1); color: white; }
+    .option-label:has(input:checked) { background: rgba(108,99,255,0.15); border-color: rgba(108,99,255,0.5); }
+    .option-label.correct { background: rgba(0,212,170,0.15) !important; border-color: rgba(0,212,170,0.6) !important; }
+    .option-label.correct .option-letter { background: var(--correct) !important; color: #0a1a14 !important; }
+    .option-label.wrong { background: rgba(255,107,107,0.12) !important; border-color: rgba(255,107,107,0.5) !important; }
+    .option-label.wrong .option-letter { background: var(--wrong) !important; color: white !important; }
+    .option-label.disabled { cursor: default; pointer-events: none; }
+
+    .submit-section { max-width: 900px; margin: 40px auto 0; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .unanswered-warning { color: var(--accent3); font-size: 14px; text-align: center; display: none; }
+    .btn-submit {
+      padding: 18px 60px; border-radius: 50px; border: none; cursor: pointer;
+      font-size: 17px; font-weight: 700; font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      color: white; box-shadow: 0 8px 32px var(--glow1);
+      transition: all 0.3s ease; letter-spacing: 0.5px;
+    }
+    .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 16px 48px var(--glow1); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    #result-panel {
+      display: none; max-width: 900px; margin: 40px auto 0;
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 28px; padding: 48px 40px; text-align: center;
+      backdrop-filter: blur(20px); animation: fadeInUp 0.6s ease;
+    }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .result-emoji { font-size: 64px; margin-bottom: 16px; display: block; }
+    .result-score {
+      font-size: 72px; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1;
+    }
+    .result-total { font-size: 24px; color: var(--text-muted); margin-bottom: 8px; }
+    .result-msg { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+    .result-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; }
+    .result-stats { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; margin-bottom: 40px; }
+    .stat-box { background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px 28px; min-width: 120px; }
+    .stat-val { font-size: 32px; font-weight: 700; }
+    .stat-val.c { color: var(--correct); }
+    .stat-val.w { color: var(--wrong); }
+    .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+    .result-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-retry {
+      padding: 14px 36px; border-radius: 50px; border: none; cursor: pointer;
+      font-size: 15px; font-weight: 600; font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, var(--accent1), #8b85ff); color: white;
+      box-shadow: 0 6px 20px var(--glow1); transition: all 0.3s ease;
+    }
+    .btn-retry:hover { transform: translateY(-2px); box-shadow: 0 10px 30px var(--glow1); }
+    .btn-home {
+      padding: 14px 36px; border-radius: 50px; border: 1px solid var(--card-border); cursor: pointer;
+      font-size: 15px; font-weight: 600; font-family: 'Inter', sans-serif;
+      background: transparent; color: var(--text); transition: all 0.3s ease;
+    }
+    .btn-home:hover { background: rgba(255,255,255,0.08); }
+
+    #result-anchor { display: block; height: 0; }
+
+    @media (max-width: 600px) {
+      .question-card { padding: 20px 18px; }
+      .result-score { font-size: 56px; }
+      #result-panel { padding: 32px 20px; }
+      #proctor-bar { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     WATERMARK
+══════════════════════════════════════ -->
+<div id="watermark">
+  <div class="wm-text">
+    <div class="wm-row"><span class="wm-item" id="wm1">ТЕСТ</span><span class="wm-item" id="wm2">ТЕСТ</span><span class="wm-item">ТЕСТ</span><span class="wm-item">ТЕСТ</span></div>
+    <div class="wm-row"><span class="wm-item">ТЕСТ</span><span class="wm-item">ТЕСТ</span><span class="wm-item">ТЕСТ</span><span class="wm-item">ТЕСТ</span></div>
+    <div class="wm-row"><span class="wm-item">ТЕСТ</span><span class="wm-item">ТЕСТ</span><span class="wm-item">ТЕСТ</span><span class="wm-item">ТЕСТ</span></div>
+    <div class="wm-row"><span class="wm-item">ТЕСТ</span><span class="wm-item">ТЕСТ</span><span class="wm-item">ТЕСТ</span><span class="wm-item">ТЕСТ</span></div>
+  </div>
+</div>
+
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PROCTORING TOP BAR
+══════════════════════════════════════ -->
+<div id="proctor-bar">
+  <div class="proctor-left">
+    <div class="proctor-indicator">
+      <div class="proctor-dot"></div>
+      <span class="proctor-label">СИСТЕМА ПРОКТОРИНГА АКТИВНА</span>
+    </div>
+    <span class="proctor-session" id="session-id-display"></span>
+  </div>
+  <div class="proctor-right">
+    <div id="timer-display">
+      <span class="timer-icon">⏱</span>
+      <span id="timer-val">30:00</span>
+    </div>
+    <div class="strikes-bar">
+      <span class="strikes-bar-label">Нарушения:</span>
+      <div class="sbar-dot" id="sb1"></div>
+      <div class="sbar-dot" id="sb2"></div>
+      <div class="sbar-dot" id="sb3"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     ANTI-CHEAT MODALS
+══════════════════════════════════════ -->
+
+
+
+<!-- Warning modal (tab switch, focus loss) -->
+<div class="ac-overlay" id="warning-overlay">
+  <div class="ac-modal" id="warning-modal">
+    <span class="ac-icon" id="warn-icon">⚠️</span>
+    <div class="ac-title" id="warn-title">Внимание! Нарушение зафиксировано</div>
+    <div class="ac-desc" id="warn-desc">Вы покинули окно тестирования. Это зафиксировано системой.</div>
+    <div class="ac-strikes" id="warn-strikes">
+      <div class="strike-dot" id="sd1">⚡</div>
+      <div class="strike-dot" id="sd2">⚡</div>
+      <div class="strike-dot" id="sd3">⚡</div>
+    </div>
+    <button class="ac-btn" id="warn-btn" onclick="dismissWarning()">Понял, продолжить тест</button>
+  </div>
+</div>
+
+<!-- Locked modal -->
+<div class="ac-overlay active" id="locked-overlay" style="display:none;">
+  <div class="locked-modal">
+    <span class="ac-icon">🔒</span>
+    <div class="ac-title" style="color:#ff6b6b; font-size:26px;">Тест заблокирован</div>
+    <div class="ac-desc" style="font-size:16px; margin-bottom: 32px;">
+      Вы превысили допустимое количество нарушений (3 из 3).<br>
+      Тест был автоматически завершён и заблокирован.<br><br>
+      <strong style="color:#fff;">Результат аннулирован.</strong>
+    </div>
+    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 32px;">
+      Все нарушения были зафиксированы системой прокторинга.
+    </div>
+    <button class="ac-btn danger" onclick="forceGoHome()">На главную страницу</button>
+  </div>
+</div>
+
+<!-- DevTools warning -->
+<div class="ac-overlay" id="devtools-overlay">
+  <div class="ac-modal">
+    <span class="ac-icon">🛠️</span>
+    <div class="ac-title">Обнаружены инструменты разработчика</div>
+    <div class="ac-desc">
+      Система зафиксировала открытие инструментов разработчика (DevTools).<br>
+      Закройте их и продолжите тест.
+    </div>
+    <div class="ac-strikes" id="dt-strikes">
+      <div class="strike-dot" id="dsd1">⚡</div>
+      <div class="strike-dot" id="dsd2">⚡</div>
+      <div class="strike-dot" id="dsd3">⚡</div>
+    </div>
+    <button class="ac-btn danger" id="dt-btn" onclick="dismissDevtools()">Закрыть DevTools и продолжить</button>
+  </div>
+</div>
+
+<!-- Tab visible again overlay (shown when user returns) -->
+<div class="ac-overlay" id="tabswitch-overlay">
+  <div class="ac-modal">
+    <span class="ac-icon" id="ts-icon">👀</span>
+    <div class="ac-title" id="ts-title">Переключение вкладки зафиксировано</div>
+    <div class="ac-desc" id="ts-desc">Вы переключились на другую вкладку или свернули окно браузера. Это нарушение зафиксировано.</div>
+    <div class="ac-strikes" id="ts-strikes">
+      <div class="strike-dot" id="tsd1">⚡</div>
+      <div class="strike-dot" id="tsd2">⚡</div>
+      <div class="strike-dot" id="tsd3">⚡</div>
+    </div>
+    <button class="ac-btn" id="ts-btn" onclick="dismissTabSwitch()">Понял, вернуться к тесту</button>
+  </div>
+</div>
+
+<!-- ════════════════ LANDING ════════════════ -->
+<section id="landing" class="page">
+  <div class="landing-header">
+    <div class="badge">Онлайн-тестирование</div>
+    <h1 class="landing-title">Методика преподавания<br>математики</h1>
+    <p class="landing-sub">Выберите режим тестирования. 25 случайных вопросов, результат сразу после отправки.</p>
+    <div class="landing-security-note">
+      <span class="sec-icon">🔒</span>
+      <span>Тест защищён системой антиплагиат-прокторинга. Переключение вкладок и DevTools запрещены.</span>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <div class="mode-card teacher-card" onclick="startTest('teacher')" id="teacher-card">
+      <div class="card-icon">📋</div>
+      <div class="card-label">Преподаватель</div>
+      <h2 class="card-title">Вопросы от учителя</h2>
+      <p class="card-desc">Официальный тест составленный преподавателем. Вопросы взяты из итогового теста по дисциплине.</p>
+      <div class="card-meta">
+        <div class="meta-item"><span>📚</span><span>50 вопросов в базе</span></div>
+        <div class="meta-item"><span>🎲</span><span>25 случайных</span></div>
+      </div>
+      <button class="btn-start" onclick="startTest('teacher'); event.stopPropagation()">Начать тест →</button>
+    </div>
+
+    <div class="mode-card ai-card" onclick="startTest('ai')" id="ai-card">
+      <div class="card-icon">🤖</div>
+      <div class="card-label">Искусственный интеллект</div>
+      <h2 class="card-title">Вопросы от ИИ</h2>
+      <p class="card-desc">Расширенный банк вопросов, составленный ИИ на основе программы курса. Более широкий охват тем.</p>
+      <div class="card-meta">
+        <div class="meta-item"><span>🧠</span><span>100 вопросов в базе</span></div>
+        <div class="meta-item"><span>🎲</span><span>25 случайных</span></div>
+      </div>
+      <button class="btn-start" onclick="startTest('ai'); event.stopPropagation()">Начать тест →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ TEST PAGE ════════════════ -->
+<section id="test-page" class="page">
+  <div class="test-header">
+    <div class="test-header-left">
+      <span class="test-mode-badge" id="mode-badge">Режим</span>
+      <h2 class="test-title-h">Методика преподавания математики</h2>
+    </div>
+    <button class="back-btn" onclick="confirmGoHome()">← На главную</button>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill"></div>
+  </div>
+
+  <div class="questions-list" id="questions-list"></div>
+
+  <div class="submit-section">
+    <div class="unanswered-warning" id="warning-msg"></div>
+    <button class="btn-submit" id="submit-btn" onclick="submitTest()">Проверить результат</button>
+  </div>
+
+  <span id="result-anchor"></span>
+
+  <div id="result-panel">
+    <span class="result-emoji" id="result-emoji">🎉</span>
+    <div class="result-score" id="result-score">0</div>
+    <div class="result-total" id="result-total">из 25</div>
+    <div class="result-msg" id="result-msg">Отличный результат!</div>
+    <div class="result-sub" id="result-sub"></div>
+    <div class="result-stats">
+      <div class="stat-box"><div class="stat-val c" id="stat-correct">0</div><div class="stat-label">Верно</div></div>
+      <div class="stat-box"><div class="stat-val w" id="stat-wrong">0</div><div class="stat-label">Неверно</div></div>
+      <div class="stat-box"><div class="stat-val" id="stat-pct" style="color:#a0a8ff">0%</div><div class="stat-label">Результат</div></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-retry" id="retry-btn">🔄 Пройти снова</button>
+      <button class="btn-home" onclick="forceGoHome()">🏠 На главную</button>
+    </div>
+  </div>
+</section>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  QUESTION BANKS
+// ══════════════════════════════════════════════════════════════
+const TEACHER_QUESTIONS = [
+  { q: "Основная цель преподавания математики в школе:", opts: ["Заучивание формул", "Развитие мышления учащихся", "Изучение истории науки", "Решение только сложных задач"], a: 1 },
+  { q: "Какой принцип обучения требует последовательности изучения материала?", opts: ["Наглядности", "Систематичности", "Индивидуализации", "Прочности"], a: 1 },
+  { q: "Что относится к интерактивным методам?", opts: ["Лекция", "Беседа", "Мозговой штурм", "Конспектирование"], a: 2 },
+  { q: "Главная форма организации обучения в школе:", opts: ["Экскурсия", "Кружок", "Урок", "Олимпиада"], a: 2 },
+  { q: "Что развивает решение математических задач?", opts: ["Логическое мышление", "Память только", "Почерк", "Скорость чтения"], a: 0 },
+  { q: "Какой метод относится к научным методам познания?", opts: ["Наблюдение", "Игра", "Повторение", "Конспект"], a: 0 },
+  { q: "Какая функция контроля выявляет уровень знаний?", opts: ["Диагностическая", "Развлекательная", "Игровая", "Художественная"], a: 0 },
+  { q: "Что является средством обучения математике?", opts: ["Учебник", "Газета", "Журнал мод", "Телевизор"], a: 0 },
+  { q: "Основной документ учителя:", opts: ["Учебный план урока", "Паспорт", "Дневник ученика", "Аттестат"], a: 0 },
+  { q: "Что такое математическое понятие?", opts: ["Научное обобщение математических объектов", "Формула", "Рисунок", "Задача"], a: 0 },
+  { q: "Что такое теорема?", opts: ["Рисунок", "Формула", "Утверждение, требующее доказательства", "Таблица"], a: 2 },
+  { q: "Какая часть урока предназначена для проверки знаний?", opts: ["Введение темы", "Контроль знаний", "Физкультминутка", "Домашнее задание"], a: 1 },
+  { q: "Какой метод обучения предполагает вопросы и ответы?", opts: ["Лекция", "Беседа", "Наблюдение", "Демонстрация"], a: 1 },
+  { q: "Что относится к внеклассной работе?", opts: ["Контрольная работа", "Олимпиада", "Самостоятельная работа", "Диктант"], a: 1 },
+  { q: "Какой принцип требует связи теории с практикой?", opts: ["Наглядности", "Доступности", "Связи обучения с жизнью", "Сознательности"], a: 2 },
+  { q: "Что обеспечивает прочность знаний?", opts: ["Повторение", "Отдых", "Перерыв", "Наблюдение"], a: 0 },
+  { q: "Какой метод наиболее эффективен при объяснении нового материала?", opts: ["Объяснение", "Контроль", "Зачёт", "Экзамен"], a: 0 },
+  { q: "Цель анализа урока:", opts: ["Оценка эффективности обучения", "Заполнение журнала", "Проверка посещаемости", "Подсчёт времени"], a: 0 },
+  { q: "Что способствует активизации учащихся?", opts: ["Интерактивные методы", "Диктовка", "Переписывание", "Заучивание"], a: 0 },
+  { q: "Как называется обучение через проблему?", opts: ["Проблемное обучение", "Репродуктивное", "Линейное", "Модульное"], a: 0 },
+  { q: "Какая цель воспитания реализуется на уроке математики?", opts: ["Формирование культуры мышления", "Только вычисления", "Только память", "Только внимание"], a: 0 },
+  { q: "Что проверяет тестирование?", opts: ["Уровень усвоения знаний", "Почерк", "Поведение", "Возраст"], a: 0 },
+  { q: "Какой метод доказательства изучается в школьном курсе?", opts: ["Математическая индукция", "Интегрирование", "Дифференцирование", "Моделирование"], a: 0 },
+  { q: "Математическая индукция применяется для:", opts: ["Доказательства утверждений о натуральных числах", "Решения интегралов", "Построения графиков", "Вычисления площадей"], a: 0 },
+  { q: "Что является основным средством наглядности?", opts: ["Чертёж", "Тетрадь", "Журнал", "Доска объявлений"], a: 0 },
+  { q: "Какой этап урока завершает занятие?", opts: ["Подведение итогов", "Объяснение", "Проверка", "Повторение"], a: 0 },
+  { q: "Что входит в подготовку к уроку?", opts: ["Составление плана", "Только проверка тетрадей", "Только отдых", "Только чтение книги"], a: 0 },
+  { q: "Что такое межпредметная связь?", opts: ["Связь математики с другими науками", "Связь между учениками", "Связь школы и дома", "Связь между классами"], a: 0 },
+  { q: "Какая цель урока связана с развитием мышления?", opts: ["Развивающая", "Образовательная", "Контрольная", "Организационная"], a: 0 },
+  { q: "Что относится к образовательным технологиям?", opts: ["Проектный метод", "Перемена", "Звонок", "Каникулы"], a: 0 },
+  { q: "Какой метод позволяет учащимся самостоятельно искать решение?", opts: ["Исследовательский", "Репродуктивный", "Иллюстративный", "Контрольный"], a: 0 },
+  { q: "Что развивает групповая работа?", opts: ["Коммуникативные навыки", "Только память", "Только письмо", "Только чтение"], a: 0 },
+  { q: "Основная цель домашнего задания:", opts: ["Закрепление знаний", "Отдых", "Контроль посещаемости", "Проверка дисциплины"], a: 0 },
+  { q: "Что такое алгоритм?", opts: ["Последовательность действий для решения задачи", "Формула", "Теорема", "График"], a: 0 },
+  { q: "Какой метод обучения основан на повторении образца?", opts: ["Репродуктивный", "Исследовательский", "Проблемный", "Проектный"], a: 0 },
+  { q: "Что изучает частная методика?", opts: ["Преподавание отдельных разделов математики", "Историю математики", "Логику", "Психологию"], a: 0 },
+  { q: "Что изучает общая методика?", opts: ["Общие закономерности обучения математике", "Только алгебру", "Только геометрию", "Только анализ"], a: 0 },
+  { q: "Какой документ определяет содержание обучения?", opts: ["Учебная программа", "Дневник", "Журнал", "Аттестат"], a: 0 },
+  { q: "Что такое компетенция?", opts: ["Способность применять знания на практике", "Оценка", "Контрольная работа", "Тест"], a: 0 },
+  { q: "Что является результатом обучения?", opts: ["Знания, умения и навыки", "Только оценки", "Только посещаемость", "Только домашняя работа"], a: 0 },
+  { q: "Какая функция оценки стимулирует учащихся?", opts: ["Мотивационная", "Контрольная", "Информационная", "Диагностическая"], a: 0 },
+  { q: "Что помогает формировать математическую речь?", opts: ["Обоснование решений", "Переписывание", "Заучивание", "Наблюдение"], a: 0 },
+  { q: "Для чего используется анализ ошибок?", opts: ["Для улучшения качества знаний", "Для наказания", "Для отчёта", "Для статистики"], a: 0 },
+  { q: "Какой метод особенно важен при изучении геометрии?", opts: ["Наглядный", "Словесный", "Контрольный", "Игровой"], a: 0 },
+  { q: "Что является основным показателем успешного урока?", opts: ["Достижение целей урока", "Продолжительность урока", "Количество задач", "Количество страниц"], a: 0 },
+  { q: "Какая форма проверки знаний проводится в конце изучения темы?", opts: ["Тематический контроль", "Входной контроль", "Беседа", "Наблюдение"], a: 0 },
+  { q: "Современный учитель математики должен:", opts: ["Использовать инновационные технологии обучения", "Только читать лекции", "Только проверять тетради", "Только задавать домашнее задание"], a: 0 },
+  { q: "Что такое дидактика?", opts: ["Теория и практика обучения", "Наука о воспитании", "Раздел психологии", "Методика спорта"], a: 0 },
+  { q: "Какой принцип обучения предполагает учёт возраста учащихся?", opts: ["Принцип доступности", "Принцип наглядности", "Принцип прочности", "Принцип систематичности"], a: 0 },
+  { q: "Что такое педагогическая рефлексия?", opts: ["Анализ учителем своей деятельности", "Метод обучения", "Форма контроля", "Вид урока"], a: 0 },
+];
+
+const AI_QUESTIONS = [
+  { q: "Что такое дифференцированное обучение?", opts: ["Обучение с учётом индивидуальных особенностей учащихся", "Изучение дифференциального исчисления", "Разделение класса на группы по поведению", "Обучение только сильных учеников"], a: 0 },
+  { q: "Какой вид мышления преимущественно развивается при изучении геометрии?", opts: ["Абстрактное", "Пространственное", "Вербальное", "Моторное"], a: 1 },
+  { q: "Что такое математическая грамотность согласно PISA?", opts: ["Умение быстро считать", "Способность применять математику в реальных жизненных ситуациях", "Знание всех формул", "Умение решать задачи ЕГЭ"], a: 1 },
+  { q: "Какой тип урока предназначен для обобщения пройденного материала?", opts: ["Урок изучения нового материала", "Комбинированный урок", "Урок-обобщение", "Урок контроля"], a: 2 },
+  { q: "Что такое фронтальная работа?", opts: ["Индивидуальная работа каждого ученика", "Работа всего класса под руководством учителя", "Работа в малых группах", "Работа в парах"], a: 1 },
+  { q: "Какой вид контроля проводится в начале учебного года для выявления стартового уровня?", opts: ["Итоговый", "Тематический", "Входной", "Текущий"], a: 2 },
+  { q: "Что такое педагогическая технология в широком смысле?", opts: ["Только компьютерные средства", "Система методов, приёмов и форм организации обучения", "Набор учебников", "Расписание уроков"], a: 1 },
+  { q: "Что означает принцип наглядности в обучении математике?", opts: ["Использование только картинок", "Опора на чувственный опыт учащихся при формировании абстракций", "Показ фильмов на уроке", "Рисование на доске"], a: 1 },
+  { q: "Что такое задача с практическим содержанием?", opts: ["Задача из учебника", "Задача, связанная с реальными жизненными ситуациями", "Задача с рисунком", "Задача с таблицей"], a: 1 },
+  { q: "Чем отличается понятие от определения?", opts: ["Понятие — мысленный образ, определение — его словесное выражение", "Они одинаковы", "Определение шире понятия", "Понятие — формула"], a: 0 },
+  { q: "Какой метод обучения основан на противоречии между известным и неизвестным?", opts: ["Репродуктивный", "Проблемный", "Объяснительно-иллюстративный", "Программированный"], a: 1 },
+  { q: "Что такое метапредметные результаты обучения?", opts: ["Результаты только по математике", "Универсальные учебные действия, применимые в разных предметах", "Оценки в аттестате", "Призы на олимпиаде"], a: 1 },
+  { q: "Какая форма организации обучения позволяет учитывать темп каждого ученика?", opts: ["Фронтальная", "Индивидуальная", "Групповая", "Коллективная"], a: 1 },
+  { q: "Что такое эвристическая беседа?", opts: ["Беседа с использованием загадок", "Вопросно-ответная форма, направляющая учащихся к самостоятельным выводам", "Беседа на свободную тему", "Беседа с родителями"], a: 1 },
+  { q: "Что включает в себя структура задачи?", opts: ["Только вопрос", "Условие и требование (вопрос)", "Только числа", "Только рисунок"], a: 1 },
+  { q: "Какой принцип предполагает движение от простого к сложному?", opts: ["Принцип прочности", "Принцип доступности", "Принцип научности", "Принцип наглядности"], a: 1 },
+  { q: "Что такое математическое моделирование?", opts: ["Создание игрушечных фигур", "Построение математической модели реального объекта или процесса", "Черчение", "Рисование графиков"], a: 1 },
+  { q: "Какой вид задач требует доказательства?", opts: ["Вычислительные задачи", "Задачи на доказательство", "Задачи на построение", "Текстовые задачи"], a: 1 },
+  { q: "Что такое рефлексия на уроке?", opts: ["Итоговая оценка", "Осмысление учащимися своей деятельности, её результатов и затруднений", "Повторение темы", "Домашнее задание"], a: 1 },
+  { q: "Какой тип задач развивает исследовательские умения?", opts: ["Типовые задачи", "Нестандартные и открытые задачи", "Задачи по образцу", "Устный счёт"], a: 1 },
+  { q: "Что такое учебная программа по математике?", opts: ["Расписание уроков", "Нормативный документ, определяющий содержание обучения и требования к результатам", "Набор учебников", "Журнал учителя"], a: 1 },
+  { q: "Какой вид контроля проводится после изучения каждой темы?", opts: ["Входной", "Текущий", "Тематический", "Фронтальный"], a: 2 },
+  { q: "Что означает принцип сознательности в обучении?", opts: ["Тихое поведение на уроке", "Осмысленное усвоение знаний, понимание сути материала", "Заучивание формул", "Внимательность"], a: 1 },
+  { q: "Что такое технологическая карта урока?", opts: ["Карта кабинета", "Современный вид планирования урока с детальным описанием деятельности", "Список учеников", "Расписание звонков"], a: 1 },
+  { q: "Какой метод предполагает самостоятельное открытие знаний учащимися?", opts: ["Объяснительно-иллюстративный", "Репродуктивный", "Частично-поисковый", "Программированный"], a: 2 },
+  { q: "Что такое математическая задача открытого типа?", opts: ["Задача с несколькими правильными ответами или способами решения", "Задача без условия", "Задача из открытого учебника", "Задача без числовых данных"], a: 0 },
+  { q: "Что такое формирующее оценивание?", opts: ["Выставление оценок в конце года", "Оценивание для поддержки и корректировки обучения в процессе", "Вступительный экзамен", "Рейтинг учеников"], a: 1 },
+  { q: "Что такое математический кружок?", opts: ["Форма внеурочной деятельности по углублённому изучению математики", "Дополнительный урок", "Контрольная работа", "Домашнее задание"], a: 0 },
+  { q: "Что такое понятие в математике?", opts: ["Число", "Форма мышления, отражающая существенные свойства математических объектов", "Задача", "Уравнение"], a: 1 },
+  { q: "Какой метод изучения математики предполагает вывод от частного к общему?", opts: ["Дедукция", "Индукция", "Аналогия", "Синтез"], a: 1 },
+  { q: "Что такое системно-деятельностный подход в обучении?", opts: ["Запоминание системы правил", "Обучение через активную деятельность самих учащихся", "Только работа с учебником", "Система контрольных работ"], a: 1 },
+  { q: "Какой вид урока сочетает несколько дидактических целей?", opts: ["Урок изучения нового", "Комбинированный урок", "Урок-игра", "Урок контроля"], a: 1 },
+  { q: "Что такое УУД (универсальные учебные действия)?", opts: ["Только умение считать", "Способы действия, обеспечивающие умение учиться", "Список тем программы", "Оценочная система"], a: 1 },
+  { q: "Какой вид задачи используется для введения нового понятия?", opts: ["Задача-ситуация или проблемная задача", "Типовая вычислительная задача", "Задача на повторение", "Контрольная задача"], a: 0 },
+  { q: "Что изучает методика обучения математике как наука?", opts: ["Только историю математики", "Закономерности, принципы, методы и формы обучения математике", "Только геометрию", "Только арифметику"], a: 1 },
+  { q: "Что такое мотивация учебной деятельности?", opts: ["Желание получить хорошую оценку только", "Система побудительных причин, определяющих направленность деятельности ученика", "Страх перед учителем", "Принуждение к обучению"], a: 1 },
+  { q: "Что такое аналогия как метод математики?", opts: ["Метод перебора", "Умозаключение, основанное на сходстве объектов по некоторым признакам", "Метод подстановки", "Метод исключения"], a: 1 },
+  { q: "Что такое дедуктивный метод в доказательстве?", opts: ["Переход от частных фактов к общим", "Переход от общих положений к частным следствиям", "Метод перебора", "Метод аналогии"], a: 1 },
+  { q: "Что такое интегрированный урок?", opts: ["Урок с использованием компьютера", "Урок, объединяющий материал нескольких предметов", "Урок с оценками", "Урок только для сильных учеников"], a: 1 },
+  { q: "Какой метод оценки позволяет учащимся оценивать друг друга?", opts: ["Самооценка", "Взаимооценка", "Тестирование", "Экзамен"], a: 1 },
+  { q: "Что такое математическая олимпиада?", opts: ["Обычная контрольная работа", "Соревнование по решению нестандартных математических задач", "Экзамен по программе", "Самостоятельная работа"], a: 1 },
+  { q: "Что такое обратная связь в обучении?", opts: ["Ответный звонок родителям", "Информация о результатах обучения, используемая для его корректировки", "Проверка тетрадей", "Ответ ученика у доски"], a: 1 },
+  { q: "Какой принцип требует, чтобы содержание обучения соответствовало науке?", opts: ["Принцип доступности", "Принцип наглядности", "Принцип научности", "Принцип прочности"], a: 2 },
+  { q: "Что такое математическое доказательство?", opts: ["Красивый рисунок", "Логическая цепочка рассуждений, подтверждающая истинность утверждения", "Контрольная работа", "Формула"], a: 1 },
+  { q: "Что такое модульное обучение?", opts: ["Обучение с модулями памяти", "Разбивка содержания на самостоятельные учебные блоки (модули)", "Только дистанционное обучение", "Обучение на компьютере"], a: 1 },
+  { q: "Что такое критическое мышление в контексте обучения?", opts: ["Негативное отношение к учёбе", "Способность анализировать информацию, оценивать аргументы и делать обоснованные выводы", "Критика учителя", "Отказ от задания"], a: 1 },
+  { q: "Что такое тематическое планирование?", opts: ["Планирование одного урока", "Распределение тем и задач обучения на учебный год/раздел", "Расписание экзаменов", "Список домашних заданий"], a: 1 },
+  { q: "Что такое портфолио учащегося?", opts: ["Папка с документами", "Накопительная папка достижений и работ ученика", "Дневник", "Журнал посещаемости"], a: 1 },
+  { q: "Что такое задача-ловушка в математике?", opts: ["Сложная контрольная задача", "Задача, содержащая скрытое нарушение условий или противоречие", "Задача с большим числом действий", "Задача из экзамена"], a: 1 },
+  { q: "Какую роль играет математический язык в обучении?", opts: ["Только для записи ответа", "Средство точного выражения математических идей и структурирования мышления", "Украшение урока", "Замена устной речи"], a: 1 },
+  { q: "Что такое педагогический эксперимент?", opts: ["Опыт в лаборатории", "Исследование в области педагогики путём изменения условий обучения", "Опыт ученика", "Школьная практика"], a: 1 },
+  { q: "Что такое образовательный стандарт (ФГОС)?", opts: ["Учебник", "Государственный документ, устанавливающий требования к результатам обучения", "Расписание", "Программа кружка"], a: 1 },
+  { q: "Какой этап урока называется актуализацией знаний?", opts: ["Проверка дневников", "Воспроизведение ранее изученного материала, необходимого для нового", "Объяснение нового", "Домашнее задание"], a: 1 },
+  { q: "Что такое задача с недостающими данными?", opts: ["Задача без условия", "Задача, для решения которой недостаточно приведённых данных", "Задача с несколькими вопросами", "Задача на доказательство"], a: 1 },
+  { q: "Что такое компетентностный подход в образовании?", opts: ["Подход к оценке компетенций учителя", "Ориентация обучения на формирование способности применять знания в реальной жизни", "Подход к составлению программы", "Оценка по баллам"], a: 1 },
+  { q: "Какой метод позволяет визуализировать математические объекты?", opts: ["Диктант", "Наглядный метод (модели, схемы, чертежи)", "Устный счёт", "Перечитывание учебника"], a: 1 },
+  { q: "Что такое алгебраический метод решения задач?", opts: ["Решение на калькуляторе", "Составление и решение уравнения по условию задачи", "Геометрическое построение", "Перебор вариантов"], a: 1 },
+  { q: "Что такое арифметический метод решения задач?", opts: ["Использование формул", "Решение задачи без введения переменных, через последовательные вычисления", "Решение графически", "Составление уравнения"], a: 1 },
+  { q: "Что такое математическая игра как форма обучения?", opts: ["Развлечение без учебных целей", "Дидактически организованная игра, решающая учебные задачи через игровую деятельность", "Перемена", "Урок физкультуры"], a: 1 },
+  { q: "Что такое логическая задача?", opts: ["Задача с большим условием", "Задача, требующая применения логических умозаключений", "Задача с числами", "Задача из геометрии"], a: 1 },
+  { q: "Что такое интерактивная доска как средство обучения?", opts: ["Обычная доска с мелом", "Технологическое средство, объединяющее экран, компьютер и интерактивность", "Телевизор", "Проектор без функций"], a: 1 },
+  { q: "Что такое задача на оптимизацию?", opts: ["Задача с несколькими решениями", "Задача нахождения наилучшего (максимального или минимального) значения", "Задача на построение", "Задача на доказательство"], a: 1 },
+  { q: "Что такое самообразование учителя математики?", opts: ["Чтение художественной литературы", "Систематическое самостоятельное повышение профессиональных знаний и умений", "Отдых во время каникул", "Беседа с коллегами"], a: 1 },
+  { q: "Что такое задача на конструирование (построение) в геометрии?", opts: ["Задача с красивым рисунком", "Задача, требующая построить геометрическую фигуру с заданными свойствами", "Задача на вычисление", "Задача на доказательство"], a: 1 },
+  { q: "Что такое математическая символика?", opts: ["Красивые буквы", "Система условных обозначений, используемых в математике", "Иностранные слова", "Декорации в учебнике"], a: 1 },
+  { q: "Что такое индивидуальная образовательная траектория?", opts: ["Маршрут до школы", "Персонализированный путь освоения образовательной программы с учётом особенностей ученика", "Список оценок", "Расписание"], a: 1 },
+  { q: "Что такое комплексная задача в обучении математике?", opts: ["Очень длинная задача", "Задача, интегрирующая знания из нескольких разделов или предметов", "Задача с иллюстрацией", "Задача для сильных учеников"], a: 1 },
+  { q: "Что такое образовательная среда?", opts: ["Только класс с партами", "Совокупность условий, влияющих на обучение и развитие учащихся", "Только учебники", "Только учитель"], a: 1 },
+  { q: "Что такое геометрическое место точек (ГМТ)?", opts: ["Рисунок точек", "Множество всех точек, удовлетворяющих заданному условию", "Схема урока", "Список вопросов"], a: 1 },
+  { q: "Что такое математическая индуктивная задача?", opts: ["Задача на запоминание", "Задача, где из частных случаев нужно сформулировать общую закономерность", "Задача с чётным ответом", "Задача на перебор"], a: 1 },
+  { q: "Что такое педагогическое мастерство?", opts: ["Высокий педагогический разряд", "Высокий уровень профессиональной деятельности, обеспечивающий эффективное обучение", "Умение пользоваться компьютером", "Стаж работы"], a: 1 },
+  { q: "Что такое диагностика в обучении?", opts: ["Медицинское обследование", "Изучение и оценка уровня знаний, умений и развития учащихся", "Вид наказания", "Список ошибок"], a: 1 },
+  { q: "Что такое концентрическая структура учебной программы?", opts: ["Изучение материала по кругу без возврата", "Расположение учебного материала, при котором одни темы изучаются несколько раз с расширением", "Изучение только одной темы в году", "Структура школы"], a: 1 },
+  { q: "Что такое линейная структура учебной программы?", opts: ["Горизонтальное расположение парт", "Последовательное изучение тем без повторного возвращения к ним", "Только алгебра", "Только геометрия"], a: 1 },
+  { q: "Что такое задача с избыточными данными?", opts: ["Задача с неверными данными", "Задача, условие которой содержит лишнюю информацию", "Задача с большим условием", "Задача-ловушка"], a: 1 },
+  { q: "Что такое синтетический метод доказательства?", opts: ["Доказательство от противного", "Движение от данных условий к доказываемому утверждению", "Метод перебора", "Метод индукции"], a: 1 },
+  { q: "Что такое аналитический метод доказательства?", opts: ["Использование аналогий", "Движение от доказываемого утверждения к условиям (обратный ход)", "Метод дедукции", "Метод наблюдения"], a: 1 },
+  { q: "Что такое школьный математический эксперимент?", opts: ["Опыт в физической лаборатории", "Практическая деятельность по исследованию математических объектов", "Итоговый экзамен", "Самостоятельная работа"], a: 1 },
+  { q: "Что такое инклюзивное образование?", opts: ["Образование только для отличников", "Обучение детей с различными образовательными потребностями в общей среде", "Дистанционное образование", "Образование за рубежом"], a: 1 },
+  { q: "Что такое математический диктант?", opts: ["Диктовка текста", "Форма проверки, при которой учащиеся записывают ответы на устно продиктованные задания", "Список формул", "Домашнее задание"], a: 1 },
+  { q: "Что такое проектная деятельность в обучении математике?", opts: ["Создание компьютерного проекта", "Учебная деятельность, направленная на создание значимого продукта через решение практических задач", "Рисование проекта здания", "Оформление тетради"], a: 1 },
+  { q: "Что такое учебное исследование в математике?", opts: ["Поиск информации в интернете", "Самостоятельная деятельность учащихся по изучению математических объектов и явлений", "Чтение учебника", "Переписывание конспекта"], a: 1 },
+  { q: "Что такое задача на смекалку?", opts: ["Задача с подсказкой", "Нестандартная задача, требующая нетривиального подхода", "Лёгкая задача", "Задача для дошкольников"], a: 1 },
+  { q: "Что такое математическая викторина?", opts: ["Форма итогового экзамена", "Игровая форма проверки знаний в виде вопросов и быстрых ответов", "Вид самостоятельной работы", "Задание на дом"], a: 1 },
+  { q: "Что такое учебный план школы?", opts: ["Расписание уроков", "Нормативный документ, определяющий набор учебных предметов и их объём", "Список учителей", "Список учеников"], a: 1 },
+  { q: "Что такое творческое задание в математике?", opts: ["Красиво оформленное задание", "Задание, предполагающее самостоятельный поиск нестандартного пути решения", "Задание с рисунком", "Дополнительное домашнее задание"], a: 1 },
+  { q: "Что такое математический кейс?", opts: ["Папка с материалами", "Набор взаимосвязанных задач на основе реальной ситуации для анализа и решения", "Учебник", "Контрольная работа"], a: 1 },
+  { q: "Что означает «учить учиться» в контексте ФГОС?", opts: ["Заучивать правила", "Формировать умение самостоятельно приобретать и применять знания", "Много решать задач", "Работать с учебником"], a: 1 },
+  { q: "Что такое задача на классификацию в математике?", opts: ["Задача по расписанию классов", "Задача, требующая разбить математические объекты на группы по некоторому признаку", "Задача на счёт", "Задача на перебор"], a: 1 },
+  { q: "Что такое ментальная карта (интеллект-карта) в обучении?", opts: ["Карта памяти", "Визуальный инструмент структурирования информации вокруг центральной идеи", "Карта местности", "Схема урока"], a: 1 },
+  { q: "Что такое геймификация в образовании?", opts: ["Отказ от обучения в пользу игр", "Применение игровых элементов и механик в учебном процессе для повышения мотивации", "Урок в компьютерном зале", "Математическая игра на перемене"], a: 1 },
+  { q: "Что такое педагогическая диагностика?", opts: ["Медицинская справка", "Система методов и средств изучения учебных достижений учащихся", "Список ошибок ученика", "Тема урока"], a: 1 },
+  { q: "Какой тип задачи предполагает несколько способов решения?", opts: ["Стандартная вычислительная задача", "Задача повышенной сложности или задача с избыточными данными", "Диктант", "Задача по образцу"], a: 1 },
+  { q: "Что такое методическое объединение учителей математики?", opts: ["Профессиональный клуб по интересам", "Структурное подразделение школы для методической работы учителей", "Группа репетиторов", "Кружок по математике"], a: 1 },
+  { q: "Что такое дистанционное обучение математике?", opts: ["Изучение математики самостоятельно", "Организация учебного процесса с использованием ИКТ без физического присутствия", "Обучение без учителя", "Чтение учебника дома"], a: 1 },
+  { q: "Что понимается под задачей с параметрами?", opts: ["Задача без числовых данных", "Задача, в которой некоторые данные заданы буквенными параметрами", "Лёгкая задача", "Задача для 1 класса"], a: 1 },
+];
+
+// ══════════════════════════════════════════════════════════════
+//  SESSION & STATE
+// ══════════════════════════════════════════════════════════════
+const sessionId = 'SID-' + Math.random().toString(36).substr(2,8).toUpperCase() + '-' + Date.now().toString(36).toUpperCase();
+let currentMode = 'teacher';
+let currentQuestions = [];
+let submitted = false;
+let testActive = false;
+
+// ══════════════════════════════════════════════════════════════
+//  ANTI-CHEAT ENGINE
+// ══════════════════════════════════════════════════════════════
+const AC = {
+  violations: 0,
+  maxViolations: 3,
+  devtoolsOpen: false,
+  devtoolsInterval: null,
+  timerInterval: null,
+  timerSeconds: 30 * 60,
+  pendingModal: null,
+
+  activate() {
+    testActive = true;
+    document.body.classList.add('no-select');
+    document.getElementById('watermark').style.display = 'block';
+    document.getElementById('proctor-bar').style.display = 'flex';
+    document.getElementById('session-id-display').textContent = sessionId;
+    this.startTimer();
+    this.startDevtoolsDetection();
+  },
+
+  deactivate() {
+    testActive = false;
+    document.body.classList.remove('no-select');
+    document.getElementById('watermark').style.display = 'none';
+    document.getElementById('proctor-bar').style.display = 'none';
+    this.stopTimer();
+    this.stopDevtoolsDetection();
+    this.closeAllModals();
+    this.violations = 0;
+    this.devtoolsOpen = false;
+  },
+
+
+
+  recordViolation(type, icon, title, desc) {
+    if (!testActive || submitted) return;
+    this.violations = Math.min(this.violations + 1, this.maxViolations);
+    this.updateStrikeDots();
+    if (this.violations >= this.maxViolations) {
+      this.lockTest();
+      return;
+    }
+    this.showWarning(type, icon, title, desc);
+  },
+
+  showWarning(type, icon, title, desc) {
+    const overlayMap = {
+      tabswitch: 'tabswitch-overlay',
+      devtools: 'devtools-overlay',
+      fullscreen: 'warning-overlay',
+      focus: 'warning-overlay',
+    };
+    const ovId = overlayMap[type] || 'warning-overlay';
+
+    if (type === 'tabswitch') {
+      document.getElementById('ts-icon').textContent = icon;
+      document.getElementById('ts-title').textContent = title;
+      document.getElementById('ts-desc').textContent = desc;
+      this.updateThreeDotsEl('tsd1','tsd2','tsd3');
+    } else if (type === 'devtools') {
+      this.updateThreeDotsEl('dsd1','dsd2','dsd3');
+    } else {
+      document.getElementById('warn-icon').textContent = icon;
+      document.getElementById('warn-title').textContent = title;
+      document.getElementById('warn-desc').textContent = desc;
+      this.updateThreeDotsEl('sd1','sd2','sd3');
+    }
+    document.getElementById(ovId).classList.add('active');
+  },
+
+  updateThreeDotsEl(id1, id2, id3) {
+    const ids = [id1, id2, id3];
+    ids.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('filled', i < this.violations);
+    });
+  },
+
+  updateStrikeDots() {
+    ['sb1','sb2','sb3'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('filled', i < this.violations);
+    });
+    ['sd1','sd2','sd3'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('filled', i < this.violations);
+    });
+    ['tsd1','tsd2','tsd3'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('filled', i < this.violations);
+    });
+    ['dsd1','dsd2','dsd3'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('filled', i < this.violations);
+    });
+  },
+
+  lockTest() {
+    this.closeAllModals();
+    submitted = true;
+    testActive = false;
+    document.getElementById('locked-overlay').style.display = 'flex';
+    document.getElementById('locked-overlay').classList.add('active');
+    this.stopTimer();
+    this.stopDevtoolsDetection();
+  },
+
+  closeAllModals() {
+    ['warning-overlay','tabswitch-overlay','devtools-overlay'].forEach(id => {
+      document.getElementById(id).classList.remove('active');
+    });
+  },
+
+  // ─── TIMER ───
+  startTimer() {
+    this.timerSeconds = 30 * 60;
+    this.renderTimer();
+    this.timerInterval = setInterval(() => {
+      this.timerSeconds--;
+      this.renderTimer();
+      if (this.timerSeconds <= 0) {
+        this.stopTimer();
+        autoSubmitOnTimeout();
+      }
+    }, 1000);
+  },
+
+  stopTimer() {
+    if (this.timerInterval) { clearInterval(this.timerInterval); this.timerInterval = null; }
+  },
+
+  renderTimer() {
+    const m = Math.floor(this.timerSeconds / 60);
+    const s = this.timerSeconds % 60;
+    const display = document.getElementById('timer-val');
+    const wrap = document.getElementById('timer-display');
+    if (!display) return;
+    display.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    wrap.className = 'timer-display'; // reset
+    if (this.timerSeconds <= 120) { wrap.id = 'timer-display'; wrap.className = ''; wrap.setAttribute('id','timer-display'); wrap.style.borderColor='rgba(255,107,107,0.5)'; wrap.style.background='rgba(255,107,107,0.1)'; display.style.color='#ff6b6b'; display.style.animation='timerPulse 0.5s infinite'; }
+    else if (this.timerSeconds <= 300) { wrap.style.borderColor='rgba(255,200,0,0.5)'; wrap.style.background='rgba(255,200,0,0.1)'; display.style.color='#ffd700'; display.style.animation='timerPulse 1s infinite'; }
+    else { wrap.style.borderColor=''; wrap.style.background=''; display.style.color='#a0a8ff'; display.style.animation=''; }
+  },
+
+  // ─── DEVTOOLS DETECTION ───
+  startDevtoolsDetection() {
+    // Size-based detection
+    this.devtoolsInterval = setInterval(() => {
+      if (!testActive || submitted) return;
+      const threshold = 160;
+      const widthDiff = window.outerWidth - window.innerWidth;
+      const heightDiff = window.outerHeight - window.innerHeight;
+      const open = widthDiff > threshold || heightDiff > threshold;
+      if (open && !this.devtoolsOpen) {
+        this.devtoolsOpen = true;
+        this.recordViolation('devtools','🛠️','Обнаружены DevTools','Закройте инструменты разработчика.');
+      }
+      if (!open && this.devtoolsOpen) {
+        this.devtoolsOpen = false;
+        document.getElementById('devtools-overlay').classList.remove('active');
+      }
+    }, 800);
+
+    // Debugger-based detection
+    const detectDbg = () => {
+      if (!testActive || submitted) return;
+      const start = performance.now();
+      // eslint-disable-next-line no-debugger
+      debugger;
+      if (performance.now() - start > 80 && !this.devtoolsOpen) {
+        this.devtoolsOpen = true;
+        this.recordViolation('devtools','🛠️','Обнаружены DevTools','Обнаружен отладчик. Закройте DevTools.');
+      }
+    };
+    setInterval(detectDbg, 3000);
+  },
+
+  stopDevtoolsDetection() {
+    if (this.devtoolsInterval) { clearInterval(this.devtoolsInterval); this.devtoolsInterval = null; }
+  }
+};
+
+// ══════════════════════════════════════════════════════════════
+//  GLOBAL EVENT LISTENERS
+// ══════════════════════════════════════════════════════════════
+
+// ─── Right-click ───
+document.addEventListener('contextmenu', e => {
+  if (testActive) { e.preventDefault(); return false; }
+});
+
+// ─── Keyboard shortcuts ───
+document.addEventListener('keydown', e => {
+  if (!testActive) return;
+  const key = e.key.toLowerCase();
+  const ctrl = e.ctrlKey || e.metaKey;
+  const shift = e.shiftKey;
+  const alt = e.altKey;
+
+  // Block F12
+  if (e.key === 'F12') { e.preventDefault(); AC.recordViolation('devtools','🛠️','Нажатие F12 зафиксировано','Открытие DevTools запрещено во время теста.'); return; }
+  // Block Ctrl+Shift+I/J/C (DevTools)
+  if (ctrl && shift && ['i','j','c'].includes(key)) { e.preventDefault(); AC.recordViolation('devtools','🛠️','Попытка открыть DevTools','Горячие клавиши DevTools заблокированы.'); return; }
+  // Block Ctrl+U (view source)
+  if (ctrl && key === 'u') { e.preventDefault(); return; }
+  // Block Ctrl+S (save page)
+  if (ctrl && key === 's') { e.preventDefault(); return; }
+  // Block Ctrl+P (print)
+  if (ctrl && key === 'p') { e.preventDefault(); return; }
+  // Block Ctrl+A (select all)
+  if (ctrl && key === 'a') { e.preventDefault(); return; }
+  // Block Ctrl+C (copy)
+  if (ctrl && key === 'c') { e.preventDefault(); return; }
+  // Block Ctrl+V (paste)
+  if (ctrl && key === 'v') { e.preventDefault(); return; }
+  // Block Ctrl+F (find)
+  if (ctrl && key === 'f') { e.preventDefault(); return; }
+  // Block Ctrl+G (find next)
+  if (ctrl && key === 'g') { e.preventDefault(); return; }
+  // Block Alt+F4 (close) — limited browser support but try
+  if (alt && e.key === 'F4') { e.preventDefault(); return; }
+  // Block PrintScreen key
+  if (e.key === 'PrintScreen') { e.preventDefault(); AC.recordViolation('focus','📷','Попытка скриншота','Создание снимков экрана запрещено.'); return; }
+
+});
+
+// ─── Clipboard ───
+document.addEventListener('copy', e => { if (testActive) e.preventDefault(); });
+document.addEventListener('cut', e => { if (testActive) e.preventDefault(); });
+document.addEventListener('paste', e => { if (testActive) e.preventDefault(); });
+
+// ─── Selection clear ───
+document.addEventListener('selectstart', e => { if (testActive) e.preventDefault(); });
+
+// ─── Tab / Visibility change ───
+document.addEventListener('visibilitychange', () => {
+  if (!testActive || submitted) return;
+  if (document.hidden) {
+    // User switched away — record when they come back
+    window._acTabLeft = true;
+  } else if (window._acTabLeft) {
+    window._acTabLeft = false;
+    AC.recordViolation('tabswitch','👀','Переключение вкладки зафиксировано',
+      'Система зафиксировала, что вы переключались на другую вкладку или приложение.');
+    document.getElementById('tabswitch-overlay').classList.add('active');
+  }
+});
+
+// ─── Window blur (alt-tab, minimize) ───
+window.addEventListener('blur', () => {
+  if (!testActive || submitted) return;
+  window._acBlurred = true;
+});
+
+window.addEventListener('focus', () => {
+  if (!testActive || submitted) return;
+  if (window._acBlurred) {
+    window._acBlurred = false;
+    // Only fire if visibility didn't already catch it
+    if (!document.hidden && !window._acTabLeft) {
+      AC.recordViolation('tabswitch','🪟','Потеря фокуса окна зафиксирована',
+        'Система зафиксировала, что окно браузера потеряло фокус.');
+      document.getElementById('tabswitch-overlay').classList.add('active');
+    }
+  }
+});
+
+
+
+// ─── Drag prevention ───
+document.addEventListener('dragstart', e => { if (testActive) e.preventDefault(); });
+
+// ══════════════════════════════════════════════════════════════
+//  MODAL ACTIONS
+// ══════════════════════════════════════════════════════════════
+function dismissWarning() {
+  document.getElementById('warning-overlay').classList.remove('active');
+}
+
+function dismissTabSwitch() {
+  document.getElementById('tabswitch-overlay').classList.remove('active');
+}
+
+function dismissDevtools() {
+  if (AC.devtoolsOpen) return; // Don't dismiss if still open
+  document.getElementById('devtools-overlay').classList.remove('active');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  UTILITIES
+// ══════════════════════════════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const LETTERS = ['А', 'Б', 'В', 'Г'];
+
+// ══════════════════════════════════════════════════════════════
+//  START TEST
+// ══════════════════════════════════════════════════════════════
+function startTest(mode) {
+  currentMode = mode;
+  submitted = false;
+  const bank = mode === 'teacher' ? TEACHER_QUESTIONS : AI_QUESTIONS;
+  currentQuestions = shuffle(bank).slice(0, 25);
+
+  document.getElementById('landing').style.display = 'none';
+  const tp = document.getElementById('test-page');
+  tp.style.display = 'block';
+  window.scrollTo(0, 0);
+
+  const badge = document.getElementById('mode-badge');
+  badge.textContent = mode === 'teacher' ? '📋 Вопросы от учителя' : '🤖 Вопросы от ИИ';
+  badge.className = 'test-mode-badge ' + mode;
+
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('submit-btn').textContent = 'Проверить результат';
+  document.getElementById('result-panel').style.display = 'none';
+  document.getElementById('warning-msg').style.display = 'none';
+  document.getElementById('locked-overlay').style.display = 'none';
+  document.getElementById('locked-overlay').classList.remove('active');
+
+  // Reset AC state
+  AC.violations = 0;
+  AC.devtoolsOpen = false;
+  window._acTabLeft = false;
+  window._acBlurred = false;
+  AC.updateStrikeDots();
+
+  renderQuestions();
+  AC.activate();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════════
+function renderQuestions() {
+  const list = document.getElementById('questions-list');
+  list.innerHTML = '';
+
+  currentQuestions.forEach((item, idx) => {
+    const optsWithIndex = item.opts.map((o, i) => ({ text: o, orig: i }));
+    const shuffledOpts = shuffle(optsWithIndex);
+    const newCorrectIndex = shuffledOpts.findIndex(o => o.orig === item.a);
+
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `qcard-${idx}`;
+    card.style.animationDelay = `${idx * 0.04}s`;
+    card.dataset.correct = newCorrectIndex;
+
+    const optsHTML = shuffledOpts.map((opt, oi) => `
+      <label class="option-label" id="opt-${idx}-${oi}">
+        <input type="radio" name="q${idx}" value="${oi}" onchange="onAnswerChange(${idx})">
+        <span class="option-text">${opt.text}</span>
+      </label>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="q-number">Вопрос ${idx + 1} из ${currentQuestions.length}</div>
+      <div class="q-text">${item.q}</div>
+      <div class="options-list" id="opts-${idx}">${optsHTML}</div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function onAnswerChange(idx) { /* handled by CSS */ }
+
+// ══════════════════════════════════════════════════════════════
+//  SUBMIT
+// ══════════════════════════════════════════════════════════════
+function submitTest() {
+  if (submitted) return;
+
+  let unanswered = [];
+  for (let i = 0; i < currentQuestions.length; i++) {
+    if (!document.querySelector(`input[name="q${i}"]:checked`)) unanswered.push(i + 1);
+  }
+
+  if (unanswered.length > 0) {
+    const warn = document.getElementById('warning-msg');
+    warn.style.display = 'block';
+    warn.textContent = `⚠️ Ответьте на вопросы: ${unanswered.slice(0, 5).join(', ')}${unanswered.length > 5 ? '...' : ''}`;
+    document.getElementById(`qcard-${unanswered[0]-1}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  document.getElementById('warning-msg').style.display = 'none';
+  submitted = true;
+  document.getElementById('submit-btn').disabled = true;
+  AC.stopTimer();
+  AC.deactivate();
+
+  let correct = 0;
+  for (let i = 0; i < currentQuestions.length; i++) {
+    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+    const card = document.getElementById(`qcard-${i}`);
+    const correctIdx = parseInt(card.dataset.correct);
+    const userIdx = sel ? parseInt(sel.value) : -1;
+
+    document.querySelectorAll(`#opts-${i} .option-label`).forEach(lbl => {
+      lbl.classList.add('disabled');
+      lbl.querySelector('input').disabled = true;
+    });
+
+    document.getElementById(`opt-${i}-${correctIdx}`).classList.add('correct');
+
+    if (userIdx === correctIdx) {
+      correct++;
+      card.classList.add('answered-correct');
+    } else {
+      card.classList.add('answered-wrong');
+      if (userIdx >= 0) document.getElementById(`opt-${i}-${userIdx}`).classList.add('wrong');
+    }
+  }
+
+  showResult(correct);
+}
+
+function autoSubmitOnTimeout() {
+  if (submitted) return;
+  submitted = true;
+  document.getElementById('submit-btn').disabled = true;
+  AC.deactivate();
+
+  let correct = 0;
+  for (let i = 0; i < currentQuestions.length; i++) {
+    const sel = document.querySelector(`input[name="q${i}"]:checked`);
+    const card = document.getElementById(`qcard-${i}`);
+    const correctIdx = parseInt(card.dataset.correct);
+    const userIdx = sel ? parseInt(sel.value) : -1;
+
+    document.querySelectorAll(`#opts-${i} .option-label`).forEach(lbl => {
+      lbl.classList.add('disabled');
+      lbl.querySelector('input').disabled = true;
+    });
+    document.getElementById(`opt-${i}-${correctIdx}`).classList.add('correct');
+    if (userIdx === correctIdx) { correct++; card.classList.add('answered-correct'); }
+    else { card.classList.add('answered-wrong'); if (userIdx >= 0) document.getElementById(`opt-${i}-${userIdx}`).classList.add('wrong'); }
+  }
+
+  showResult(correct, true);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RESULT
+// ══════════════════════════════════════════════════════════════
+function showResult(correct, timeout = false) {
+  const total = currentQuestions.length;
+  const wrong = total - correct;
+  const pct = Math.round((correct / total) * 100);
+
+  let emoji, msg, sub;
+  if (timeout) { emoji = '⏰'; msg = 'Время вышло!'; sub = `Тест был автоматически завершён. Вы успели ответить правильно на ${correct} вопросов.`; }
+  else if (pct === 100) { emoji = '🏆'; msg = 'Превосходно!'; sub = 'Идеальный результат — вы знаете материал на отлично!'; }
+  else if (pct >= 80) { emoji = '🎉'; msg = 'Отличный результат!'; sub = 'Вы хорошо знаете предмет. Несколько ответов можно улучшить.'; }
+  else if (pct >= 60) { emoji = '👍'; msg = 'Хороший результат!'; sub = 'Базовый уровень достигнут. Рекомендуем повторить пропущенные темы.'; }
+  else if (pct >= 40) { emoji = '📚'; msg = 'Есть над чем поработать'; sub = 'Изучите материал внимательнее и попробуйте снова.'; }
+  else { emoji = '💪'; msg = 'Не сдавайтесь!'; sub = 'Изучите материал и обязательно попробуйте ещё раз!'; }
+
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-score').textContent = correct;
+  document.getElementById('result-total').textContent = `из ${total} баллов`;
+  document.getElementById('result-msg').textContent = msg;
+  document.getElementById('result-sub').textContent = sub;
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-wrong').textContent = wrong;
+  document.getElementById('stat-pct').textContent = pct + '%';
+
+  const panel = document.getElementById('result-panel');
+  panel.style.display = 'block';
+  document.getElementById('retry-btn').onclick = () => startTest(currentMode);
+
+  setTimeout(() => {
+    document.getElementById('result-anchor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function confirmGoHome() {
+  if (!submitted && testActive) {
+    if (!confirm('Вы уверены? Прогресс теста будет потерян.')) return;
+  }
+  forceGoHome();
+}
+
+function forceGoHome() {
+  AC.deactivate();
+  document.getElementById('locked-overlay').style.display = 'none';
+  document.getElementById('locked-overlay').classList.remove('active');
+  document.getElementById('test-page').style.display = 'none';
+  document.getElementById('landing').style.display = 'flex';
+  window.scrollTo(0, 0);
+}
+
+// Watermark session ID
+document.querySelectorAll('.wm-item').forEach(el => {
+  el.textContent = sessionId;
+});
+</script>
+</body>
+</html>
